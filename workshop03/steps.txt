@@ -1,0 +1,24 @@
+Create service account for tiller
+	kubectl apply -f helm-sa.yaml
+
+Install tiller to cluster, where tiller is the service account's name
+	helm init --service-account tiller
+
+Verify tiller is running
+	kubectl get svc -n kube-system
+
+Deploy Nginx Ingress
+	helm install --namespace nginx-ingress stable/nginx-ingress
+
+Get IP address
+	kubectl get svc -n nginx-ingress
+
+Deploy v1 and v2 version of the application
+	kubectl apply -f v1_myapp.yaml
+	kubectl apply -f v2_myapp.yaml
+
+Deploy the ingress
+	kubectl apply -f myapp_ingress.yaml
+
+Deploy autoscaling
+	kubectl apply -f myapp_hpa.yaml

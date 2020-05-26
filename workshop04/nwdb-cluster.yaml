@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+   name: nwdb-cluster-secret
+   labels:
+      app: northwind
+
+data:
+   ROOT_PASSWORD: Y2hhbmdlaXQ= 
+
+---
+# create a cluster using CRD
+apiVersion: mysql.presslabs.org/v1alpha1
+kind: MysqlCluster
+metadata:
+   name: nwdb
+   labels:
+      app: northwind
+
+spec:
+   replicas: 2
+
+   secretName: nwdb-cluster-secret
+
+   persistentVolumeClaim:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+         requests:
+            storage: 1Gi
+      storageClassName: do-block-storage 

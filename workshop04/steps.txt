@@ -1,0 +1,21 @@
+Create the following namespace
+	kubectl create ns mysql-operator 
+	kubectl create ns nginx-ingress 
+
+Install the following Helm Packages
+
+	helm install mysql-operator presslabs/mysql-operator \ 
+		--version <version> -n mysql-operator
+
+	helm install nginx-ingress stable/nginx-ingress \
+		--version <version> -n nginx-ingress
+
+For NFS server
+	run deploy-nfs.sh
+
+Deployment
+	kubectl apply -f wordpress_db.yaml
+	kubectl apply -f wordpress.yaml
+
+If deploying NFS
+	kubectl apply -f wordpress-nfs.yaml

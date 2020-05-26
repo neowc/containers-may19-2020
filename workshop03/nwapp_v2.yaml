@@ -1,0 +1,76 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: nwappv2-deploy
+   labels:
+      app: northwind
+
+spec:
+   replicas: 2
+   selector:
+      matchLabels:
+         app: nwappv2-pod
+   strategy:
+      type: RollingUpdate
+      rollingUpdate:
+         maxSurge: 1
+         maxUnavailable: 1
+   template:
+      metadata:
+         name: nwappv2-pod 
+         labels:
+            app: nwappv2-pod
+      spec:
+         containers:
+         - name: nwapp-container
+           image: stackupiss/northwind-app:v2
+           imagePullPolicy: IfNotPresent
+           env:
+           - name: DB_USER
+             valueFrom:
+                configMapKeyRef:
+                   name: nwapp-cm 
+                   key: DB_USER
+           - name: DB_HOST
+             valueFrom:
+                configMapKeyRef:
+                   name: nwapp-cm 
+                   key: DB_HOST
+           - name: DB_PASSWORD 
+             valueFrom:
+                secretKeyRef:
+                   name: nwdb-secret
+                   key: MYSQL_ROOT_PASSWORD
+           - name: INSTANCE_IP_ADDRESS 
+             valueFrom:
+                fieldRef:
+                   fieldPath: status.podIP
+           ports:
+           - name: nwappv2-port
+             containerPort: 3000
+           livenessProbe:
+              initialDelaySeconds: 5
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+              httpGet:
+                 path: /health
+                 port: nwappv2-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+   name: nwappv2-svc
+   labels:
+      app: northwind
+
+spec:
+   type: ClusterIP
+   selector:
+      app: nwappv2-pod
+   ports:
+   - name: app-port
+     port: 8080
+     targetPort: nwappv2-port
+

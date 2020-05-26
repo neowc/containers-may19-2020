@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "..\\hello"
+		},
+		{
+			"path": "..\\northwind"
+		},
+		{
+			"path": "..\\weather"
+		},
+		{
+			"path": "..\\workshop02"
+		},
+		{
+			"path": "..\\workshop03"
+		},
+		{
+			"path": "..\\workshop04"
+		}
+	]
+}

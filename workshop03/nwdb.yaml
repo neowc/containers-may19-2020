@@ -1,0 +1,93 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+   name: nwdb-secret
+   labels:
+      app: northwind
+
+data:
+   MYSQL_ROOT_PASSWORD: Y2hhbmdlaXQ= 
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: nwdb-deploy
+   labels:
+      app: northwind
+
+spec:
+   replicas: 1
+   selector:
+      matchLabels:
+         app: northwind-pod
+   template: # pod template
+      metadata:
+         name: nwdb-pod 
+         labels:
+            app: northwind-pod
+      spec:
+         volumes:
+         - name: mysql-vol
+           persistentVolumeClaim:
+              claimName: nwdb-pvc
+
+         initContainers:
+         - name: scrub
+           volumeMounts:
+           - name: mysql-vol
+             mountPath: /scrub
+           image: busybox
+           imagePullPolicy: IfNotPresent
+           command:
+           - /bin/sh
+           - -c
+           - "test -e /scrub && rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  && test -z \"$(ls -A /scrub)\" || exit 1"
+
+         containers:
+         - name: northwind-container
+           image: chukmunnlee/nwdb:v3
+           imagePullPolicy: IfNotPresent
+           env:
+           - name: MYSQL_ROOT_PASSWORD 
+             valueFrom:
+                secretKeyRef:
+                   name: nwdb-secret
+                   key: MYSQL_ROOT_PASSWORD
+           ports:
+           - name: mysql-port
+             containerPort: 3306
+
+           volumeMounts:
+           - name: mysql-vol
+             mountPath: /var/lib/mysql
+
+           livenessProbe:
+              initialDelaySeconds: 15
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+              exec:
+                 command:
+                 - bash
+                 - -c
+                 - "mysqladmin ping -uroot -p${MYSQL_ROOT_PASSWORD} || exit 1"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+   name: nwdb-svc
+   labels:
+      app: northwind
+
+spec:
+   type: ClusterIP
+   selector:
+      # pod label
+      app: northwind-pod
+   ports:
+   - name: db-port
+     port: 3306
+     targetPort: mysql-port

@@ -1,0 +1,33 @@
+---
+# write deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: fortune-deploy
+   labels:
+      dept: engineering
+      app: fortune
+
+spec:
+   replicas: 3
+
+   selector:
+      matchLabels:
+         app: fortune-pod
+
+   template:
+      # pod yaml 
+      metadata:
+         name: fortune-pod
+         labels:
+            dept: engineering 
+            app: fortune-pod
+      spec:
+         containers:
+         - name: fortune-container
+           image: chukmunnlee/fortune:v1
+           imagePullPolicy: IfNotPresent
+           ports:
+           - name: http-port 
+             containerPort: 3000
+

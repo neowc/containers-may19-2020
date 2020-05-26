@@ -1,0 +1,83 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+   name: nwapp-cm 
+   labels:
+      app: northwind
+
+data:
+   DB_USER: root
+   DB_HOST: nwdb-svc.nwapp.svc.cluster.local
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: nwapp-deploy
+   labels:
+      app: northwind
+
+spec:
+   replicas: 2
+   selector:
+      matchLabels:
+         app: nwapp-pod
+   template:
+      metadata:
+         name: nwapp-pod 
+         labels:
+            app: nwapp-pod
+      spec:
+         containers:
+         - name: nwapp-container
+           image: chukmunnlee/nwapp:v1
+           imagePullPolicy: IfNotPresent
+           env:
+           - name: DB_USER
+             valueFrom:
+                configMapKeyRef:
+                   name: nwapp-cm 
+                   key: DB_USER
+           - name: DB_HOST
+             valueFrom:
+                configMapKeyRef:
+                   name: nwapp-cm 
+                   key: DB_HOST
+           - name: DB_PASSWORD 
+             valueFrom:
+                secretKeyRef:
+                   name: nwdb-secret
+                   key: MYSQL_ROOT_PASSWORD
+           - name: INSTANCE_IP_ADDRESS 
+             valueFrom:
+                fieldRef:
+                   fieldPath: status.podIP
+           ports:
+           - name: nwapp-port
+             containerPort: 3000
+           livenessProbe:
+              initialDelaySeconds: 5
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+              httpGet:
+                 path: /health
+                 port: nwapp-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+   name: nwapp-svc
+   labels:
+      app: northwind
+
+spec:
+   type: LoadBalancer
+   selector:
+      app: nwapp-pod
+   ports:
+   - name: app-port
+     port: 80
+     targetPort: nwapp-port
+

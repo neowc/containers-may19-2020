@@ -1,0 +1,31 @@
+Deploy with Docker
+	Create a network
+
+		docker network create mynet
+
+	Deploy the database. Run inside mynet but don't expose any ports
+	so its not accessible externally.  Mount a volume inside the 
+	container to externalized the database
+		
+		docker run -d --name mydb --network mynet \
+			-v /some/path/in/host:/var/lib/mysql \
+			stackupiss/northwind-db:v1
+
+	Deploy the application. Expose the application on port 80. 
+
+		docker run -d -p 80:3000 --name myapp --network mynet \
+			-e DB_HOST=mydb -e DB_USER=root -e DB_PASSWORD=changeit \
+			<image>
+
+Deploy with docker-compose
+	Create a directory (assume using PWD) for MySQL volume
+
+		mkdir $HOME/mysql
+
+	Deploy application with docker-compose
+
+		docker-compose up -d
+
+	Verify that containers are up
+
+		docker-compose ps

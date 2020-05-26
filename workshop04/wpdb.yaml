@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+   name: wp-cluster-secret
+   labels:
+      app: wordpress
+
+data:
+   ROOT_PASSWORD: Y2hhbmdlaXQ= 
+
+---
+# create a cluster using CRD
+apiVersion: mysql.presslabs.org/v1alpha1
+kind: MysqlCluster
+metadata:
+   name: wpdb
+   labels:
+      app: wordpress
+
+spec:
+   replicas: 2
+
+   secretName: wp-cluster-secret
+
+   persistentVolumeClaim:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+         requests:
+            storage: 2Gi
+      storageClassName: do-block-storage 

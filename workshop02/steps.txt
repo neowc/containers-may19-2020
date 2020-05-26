@@ -1,0 +1,14 @@
+Create the namespace
+	kubectl apply -f myns.yaml
+
+Deploy the database
+	kubectl apply -f mydb.yaml --record
+
+Deploy the application
+	kubectl apply -f myapp.yaml --record
+
+Get the service IP address
+	kubectl get svc/myapp-svc -n myns
+
+Get revisions
+	kubectl rollout status deploy/myapp-deploy -n myns

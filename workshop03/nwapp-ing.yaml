@@ -1,0 +1,29 @@
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+   name: nwapp-ing
+   labels:
+      app: northwind
+   annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/limit-rpm: "15"
+
+spec:
+   rules:
+   - host: "v1.nwapp.167.172.4.82.nip.io"
+     http:
+        paths:
+        - path: /
+          backend:
+             serviceName: nwapp-svc
+             servicePort: 8080
+   - host: "v2.nwapp.167.172.4.82.nip.io"
+     http:
+        paths:
+        - path: /
+          backend:
+             serviceName: nwappv2-svc
+             servicePort: 8080
+
